@@ -4,6 +4,8 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
 const productRoutes = require('./routes/productRoutes');
+const userRoutes = require('./routes/userRoutes');
+const orderRoutes = require('./routes/orderRoutes');
 
 dotenv.config();
 
@@ -16,9 +18,14 @@ app.use(express.json());
 app.use('/images', express.static(path.join(__dirname, '../frontend/public/images')));
 
 // API rotaları
-app.use('/api/users', require('./routes/userRoutes'));
+console.log('Mounting user routes on /api/users');
+app.use('/api/users', userRoutes);
+
+console.log('Mounting product routes on /api/products');
 app.use('/api/products', productRoutes);
-app.use('/api/orders', require('./routes/orderRoutes'));
+
+console.log('Mounting order routes on /api/orders');
+app.use('/api/orders', orderRoutes);
 
 // MongoDB bağlantısı
 mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://admin:123@gozlukcu-cluster0.vycctfm.mongodb.net/?retryWrites=true&w=majority', {

@@ -45,20 +45,17 @@ export const OrderProvider = ({ children }) => {
 
   const returnOrder = async (orderId, reason) => {
     try {
-      // Backend'deki iade talebi rotasını çağır
-      const { data } = await axios.put(`http://localhost:5000/api/orders/${orderId}/request-return`, {
+      const { data } = await axios.put(`/api/orders/${orderId}/request-return`, {
         returnReason: reason,
-        returnStatus: 'Beklemede', // İade talebi başlangıçta Beklemede olacak
+        returnStatus: 'Beklemede',
       });
       console.log(`Sipariş ${orderId} için iade talebi başarıyla oluşturuldu:`, data);
-      // Sipariş listesini yeniden çekmek gerekebilir veya state güncellenebilir.
-      // Şimdilik basitçe konsola logluyoruz.
-      // İade talebi sonrası sipariş listesini güncelleyelim
+      
       setOrders(orders.map(order => order._id === orderId ? data : order));
       return data;
     } catch (err) {
       console.error(`Sipariş ${orderId} için iade talebi oluşturma hatası:`, err);
-      throw err; // Hatanın frontend bileşenine iletilmesini sağla
+      throw err; 
     }
   };
 
