@@ -14,7 +14,17 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Statik dosyaları serve et
+// Statik dosyaları serve et - BU KISMI YUKARI TAŞIYORUZ
+if (process.env.NODE_ENV === 'production') {
+  console.log('Serving static files from:', path.join(__dirname, '../frontend/build')); // Debug için log ekleyelim
+  app.use(express.static(path.join(__dirname, '../frontend/build')));
+
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/build/index.html'));
+  });
+}
+
+// Statik dosyaları serve et (images gibi özel durumlar için)
 app.use('/images', express.static(path.join(__dirname, '../frontend/public/images')));
 
 // API rotaları
@@ -34,15 +44,6 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://admin:123@gozlukcu-cl
 })
 .then(() => console.log('MongoDB bağlantısı başarılı'))
 .catch((err) => console.error('MongoDB bağlantı hatası:', err));
-
-// Production ortamında frontend dosyalarını serve et
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../frontend/build')));
-  
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/build/index.html'));
-  });
-}
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
