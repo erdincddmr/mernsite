@@ -6,7 +6,8 @@
   },
   "scripts": {
     "start": "node backend/server.js",
-    "dev": "nodemon backend/server.js"
+    "dev": "nodemon backend/server.js",
+    "build": "cd backend && npm install && cd ../frontend && npm install && npm run build"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
