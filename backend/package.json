@@ -22,7 +22,6 @@
     "jsonwebtoken": "8.5.1",
     "mongoose": "6.0.12",
     "nodemailer": "6.7.0",
-    "path-to-regexp": "6.2.0",
     "react-image-magnifiers": "1.4.0"
   }
 }
