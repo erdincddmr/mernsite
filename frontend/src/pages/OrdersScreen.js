@@ -110,7 +110,7 @@ const OrdersScreen = () => {
         Siparişlerim
       </Typography>
 
-      {orders.length === 0 ? (
+      {orders && Array.isArray(orders) && orders.length === 0 ? (
         <Typography>Henüz siparişiniz bulunmamaktadır.</Typography>
       ) : (
         <Typography variant="body2" color="textSecondary" align="center" sx={{ mb: 2 }}>
