@@ -12,21 +12,31 @@ export const OrderProvider = ({ children }) => {
 
   useEffect(() => {
     const userInfo = localStorage.getItem('userInfo');
+    console.log('localStorage userInfo:', userInfo);
+
     if (userInfo) {
       const user = JSON.parse(userInfo);
+      console.log('Parsed user info:', user);
+      console.log('User ID for API call:', user.id || user._id);
+
       const fetchOrders = async () => {
         try {
           setLoading(true);
-          const { data } = await axios.get(`/api/orders/myorders/${user.id || user._id}`);
+          const apiUrl = `/api/orders/myorders/${user.id || user._id}`;
+          console.log('Fetching orders from:', apiUrl);
+          const { data } = await axios.get(apiUrl);
+          console.log('Orders fetched successfully:', data);
           setOrders(data);
           setLoading(false);
         } catch (err) {
+          console.error('Error fetching orders:', err.response?.data?.message || err.message);
           setError(err.response?.data?.message || 'Siparişler yüklenirken hata oluştu');
           setLoading(false);
         }
       };
       fetchOrders();
     } else {
+      console.log('No userInfo found in localStorage.');
       setOrders([]);
       setLoading(false);
     }
