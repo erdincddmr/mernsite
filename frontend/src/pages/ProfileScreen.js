@@ -20,27 +20,44 @@ const ProfileScreen = () => {
   const [passwordMessage, setPasswordMessage] = useState(null);
 
   useEffect(() => {
-    if (!id) {
+    const userInfo = localStorage.getItem('userInfo');
+    if (!userInfo) {
+      setError('Oturum açmanız gerekiyor.');
+      setLoading(false);
+      navigate('/login');
+      return;
+    }
+
+    const parsedUserInfo = JSON.parse(userInfo);
+    if (!parsedUserInfo.id && !parsedUserInfo._id) {
       setError('Kullanıcı kimliği bulunamadı.');
+      setLoading(false);
+      return;
+    }
+
+    const userId = parsedUserInfo.id || parsedUserInfo._id;
+    if (id && id !== userId) {
+      setError('Bu profili görüntüleme yetkiniz yok.');
       setLoading(false);
       return;
     }
 
     const fetchProfile = async () => {
       try {
-        const { data } = await axios.get(`http://localhost:5000/api/users/profile/${id}`);
+        const { data } = await axios.get(`http://localhost:5000/api/users/profile/${userId}`);
         setUser(data);
         setName(data.name);
         setEmail(data.email);
         setLoading(false);
       } catch (error) {
+        console.error('Profil yükleme hatası:', error);
         setError(error.response?.data?.message || 'Profil yüklenirken bir hata oluştu.');
         setLoading(false);
       }
     };
 
     fetchProfile();
-  }, [id]);
+  }, [id, navigate]);
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();

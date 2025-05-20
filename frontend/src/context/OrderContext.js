@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import { useUser } from './UserContext';
 
 const OrderContext = createContext();
 
@@ -10,41 +11,57 @@ export const OrderProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const userInfo = localStorage.getItem('userInfo');
-    console.log('localStorage userInfo:', userInfo);
+  const { user } = useUser();
 
-    if (userInfo) {
-      const user = JSON.parse(userInfo);
+  useEffect(() => {
+    if (user) {
       console.log('Parsed user info:', user);
       console.log('User ID for API call:', user.id || user._id);
 
       const fetchOrders = async () => {
         try {
           setLoading(true);
-          const apiUrl = `/api/orders/myorders/${user.id || user._id}`;
+          const apiUrl = `${process.env.REACT_APP_BACKEND_URL}/api/orders/myorders/${user.id || user._id}`;
           console.log('Fetching orders from:', apiUrl);
           const { data } = await axios.get(apiUrl);
           console.log('Orders fetched successfully:', data);
-          setOrders(data);
+          
+          if (Array.isArray(data)) {
+            setOrders(data);
+          } else {
+            console.error('API yanıtı bir dizi değil:', data);
+            setError('Siparişler yüklenirken bir hata oluştu: Geçersiz veri formatı');
+          }
           setLoading(false);
         } catch (err) {
-          console.error('Error fetching orders:', err.response?.data?.message || err.message);
-          setError(err.response?.data?.message || 'Siparişler yüklenirken hata oluştu');
+          console.error('Error fetching orders:', err);
+          if (err.response) {
+            console.error('Error response status:', err.response.status);
+            console.error('Error response data:', err.response.data);
+            setError(err.response.data.message || `Siparişler yüklenirken bir hata oluştu: ${err.response.status}`);
+          } else if (err.request) {
+            console.error('Error request:', err.request);
+            setError('Sunucuya bağlanılamadı. Lütfen daha sonra tekrar deneyin.');
+          } else {
+            console.error('Error message:', err.message);
+            setError('Siparişler yüklenirken bir hata oluştu');
+          }
           setLoading(false);
         }
       };
       fetchOrders();
     } else {
-      console.log('No userInfo found in localStorage.');
+      console.log('No user info found from UserContext. Not fetching orders.');
       setOrders([]);
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   const createOrder = async (order) => {
     try {
-      const { data } = await axios.post('/api/orders', order);
+      const apiUrl = `${process.env.REACT_APP_BACKEND_URL}/api/orders`;
+      console.log('Creating order at:', apiUrl);
+      const { data } = await axios.post(apiUrl, order);
       console.log('Sipariş başarıyla oluşturuldu:', data);
       return data;
     } catch (err) {
@@ -55,7 +72,9 @@ export const OrderProvider = ({ children }) => {
 
   const returnOrder = async (orderId, reason) => {
     try {
-      const { data } = await axios.put(`/api/orders/${orderId}/request-return`, {
+      const apiUrl = `${process.env.REACT_APP_BACKEND_URL}/api/orders/${orderId}/request-return`;
+      console.log(`Requesting return for order ${orderId} at:`, apiUrl);
+      const { data } = await axios.put(apiUrl, {
         returnReason: reason,
         returnStatus: 'Beklemede',
       });

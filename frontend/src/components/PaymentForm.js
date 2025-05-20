@@ -39,29 +39,29 @@ const PaymentForm = ({ open, onClose, totalAmount }) => {
   const validateForm = () => {
     const newErrors = {};
     
-    // Kart numarası kontrolü (16 haneli)
+   
     if (!/^\d{16}$/.test(formData.cardNumber.replace(/\s/g, ''))) {
       newErrors.cardNumber = 'Geçerli bir kart numarası giriniz (16 haneli)';
     }
 
-    // Kart sahibi kontrolü
+    
     if (!/^[A-Za-zğüşıöçĞÜŞİÖÇ\s]{5,50}$/.test(formData.cardHolder)) {
       newErrors.cardHolder = 'Geçerli bir kart sahibi adı giriniz';
     }
 
-    // Son kullanma ay kontrolü
+   
     if (!/^(0[1-9]|1[0-2])$/.test(formData.expiryMonth)) {
       newErrors.expiryMonth = 'Geçerli bir ay giriniz (01-12)';
     }
 
-    // Son kullanma yıl kontrolü
+    
     const currentYear = new Date().getFullYear();
     const year = parseInt(formData.expiryYear);
     if (year < currentYear || year > currentYear + 10) {
       newErrors.expiryYear = 'Geçerli bir yıl giriniz';
     }
 
-    // CVV kontrolü (3 haneli)
+ 
     if (!/^\d{3}$/.test(formData.cvv)) {
       newErrors.cvv = 'Geçerli bir CVV giriniz (3 haneli)';
     }
@@ -73,49 +73,47 @@ const PaymentForm = ({ open, onClose, totalAmount }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
-      // Sipariş oluştur
       const userInfo = JSON.parse(localStorage.getItem('userInfo'));
       console.log('userInfo from localStorage:', userInfo);
       
+      if (!userInfo || !userInfo.id) {
+        alert('Sipariş oluşturmak için giriş yapmalısınız.');
+        navigate('/login');
+        return;
+      }
+
       const order = {
-        orderItems: cartItems.map(item => ({ // cartItems'ı Order modeline uygun dönüştürüyoruz
+        orderItems: cartItems.map(item => ({ 
           name: item.name,
           quantity: item.quantity,
           image: item.image,
           price: item.price,
-          product: item._id, // Ürünün MongoDB ID'si
+          product: item._id, 
         })),
         totalPrice: totalAmount,
-        shippingAddress: { // Örnek adres bilgileri, gerçek projede formdan alınır
+        shippingAddress: { 
           address: 'Örnek Adres 1',
           city: 'Örnek İl',
           postalCode: '12345',
           country: 'Türkiye',
         },
-        paymentMethod: 'Credit Card', // Ödeme yöntemi
-        user: userInfo ? userInfo.id : null, // Kullanıcı ID'si
+        paymentMethod: 'Credit Card',
+        user: userInfo.id,
       };
-      
-      // Eğer kullanıcı bilgisi yoksa sipariş oluşturma
-      if (!order.user) {
-        alert('Sipariş oluşturmak için giriş yapmalısınız.');
-        return;
-      }
 
       try {
-        const createdOrder = await createOrder(order); // createOrder'ı çağırıyoruz
+        const createdOrder = await createOrder(order);
+        console.log('Sipariş oluşturuldu:', createdOrder);
         clearCart();
         setShowSuccess(true);
 
-        // 2 saniye sonra siparişler sayfasına yönlendir
         setTimeout(() => {
           onClose();
           navigate('/orders');
         }, 2000);
       } catch (error) {
-        // Sipariş oluşturma hatasını burada yönetebilirsiniz
         console.error('Sipariş oluşturulamadı:', error.response?.data?.message || error.message);
-        alert(`Sipariş oluşturulurken bir hata oluştu: ${error.response?.data?.message || error.message}`); // Daha detaylı hata bildirimi
+        alert(`Sipariş oluşturulurken bir hata oluştu: ${error.response?.data?.message || error.message}`);
       }
     }
   };

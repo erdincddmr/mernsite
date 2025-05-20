@@ -51,8 +51,7 @@ const darkTheme = createTheme({
 
 const AppContent = () => {
   const location = useLocation();
-  const isHomePage = location.pathname === '/';
-
+  
   return (
     <Box sx={{ 
       display: 'flex', 
@@ -65,14 +64,14 @@ const AppContent = () => {
         display: 'flex',
         flexDirection: 'column',
         padding: '20px 0',
-        pb: 10 // Footer için alt boşluk
+        pb: 10 
       }}>
         <Container>
           <Routes>
+            <Route path="/login" element={<LoginScreen />} exact />
             <Route path="/" element={<HomeScreen />} />
             <Route path="/product/:id" element={<ProductScreen />} />
             <Route path="/cart" element={<CartScreen />} />
-            <Route path="/login" element={<LoginScreen />} />
             <Route path="/register" element={<RegisterScreen />} />
             <Route path="/profile/:id" element={<ProfileScreen />} />
             <Route path="/admin" element={<AdminScreen />} />

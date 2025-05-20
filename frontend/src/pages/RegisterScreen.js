@@ -28,15 +28,19 @@ const RegisterScreen = () => {
       return;
     }
     try {
-      const { data } = await axios.post('http://localhost:5000/api/users/register', {
+      const apiUrl = `${process.env.REACT_APP_BACKEND_URL}/api/users/register`;
+      console.log('Registering user to:', apiUrl);
+      const { data } = await axios.post(apiUrl, {
         name,
         email,
         password,
       });
+      console.log('Registration successful:', data);
       localStorage.setItem('userInfo', JSON.stringify(data.user));
       login(data.user);
       navigate(`/profile/${data.user.id}`);
     } catch (error) {
+      console.error('Kayıt hatası:', error);
       setError(error.response?.data?.message || 'Kayıt olurken bir hata oluştu');
     }
   };

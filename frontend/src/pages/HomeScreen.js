@@ -17,14 +17,25 @@ const HomeScreen = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const { data } = await axios.get('http://localhost:5000/api/products');
-        const productsWithFixedImages = data.map(product => ({
-          ...product,
-          image: product.image.replace('/images/', 'http://localhost:5000/images/')
-        }));
-        setProducts(productsWithFixedImages);
+        const apiUrl = `${process.env.REACT_APP_BACKEND_URL}/api/products`;
+        console.log('Fetching products from:', apiUrl);
+        const { data } = await axios.get(apiUrl);
+        console.log('Products fetched successfully:', data);
+        
+        if (Array.isArray(data)) {
+          const productsWithFixedImages = data.map(product => ({
+            ...product,
+            image: product.image.replace('/images/', `${process.env.REACT_APP_BACKEND_URL}/images/`)
+          }));
+          setProducts(productsWithFixedImages);
+        } else {
+          console.error('API yanıtı bir dizi değil:', data);
+          setProducts([]);
+        }
+        
       } catch (error) {
         console.error('Ürünler yüklenirken hata oluştu:', error);
+        setProducts([]);
       }
     };
 

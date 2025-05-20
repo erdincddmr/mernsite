@@ -1,15 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const Order = require('../models/Order');
-const User = require('../models/User'); // Eğer sipariş oluşturan kullanıcıyı doğrudan route içinde bulacaksak
+const User = require('../models/User'); 
 
-// Şimdilik örnek bir endpoint
 router.get('/', (req, res) => {
   res.send('Sipariş rotası çalışıyor');
 });
 
-// Yeni sipariş oluştur
-// POST /api/orders
 router.post('/', async (req, res) => {
   const { orderItems, shippingAddress, paymentMethod, totalPrice, user } = req.body;
 
@@ -21,7 +18,7 @@ router.post('/', async (req, res) => {
   try {
     const order = new Order({
       orderItems,
-      user, // Frontend'den gelen kullanıcı ID'si direkt olarak atanıyor
+      user, 
       shippingAddress,
       paymentMethod,
       totalPrice,
@@ -35,12 +32,23 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Kullanıcının siparişlerini getir
-// GET /api/orders/myorders/:userId
-// Not: Normalde kimlik doğrulama middleware kullanılarak yapılması daha güvenlidir.
 router.get('/myorders/:userId', async (req, res) => {
   try {
-    const orders = await Order.find({ user: req.params.userId });
+    console.log('Siparişler getiriliyor, kullanıcı ID:', req.params.userId);
+    
+    if (!req.params.userId) {
+      return res.status(400).json({ message: 'Kullanıcı ID\'si gerekli' });
+    }
+
+    const orders = await Order.find({ user: req.params.userId })
+      .sort({ createdAt: -1 }); // En yeni siparişler önce
+
+    console.log('Bulunan siparişler:', orders);
+    
+    if (!orders || orders.length === 0) {
+      return res.json([]); // Boş dizi döndür
+    }
+
     res.json(orders);
   } catch (error) {
     console.error('Kullanıcı siparişlerini getirme hatası:', error);
@@ -48,14 +56,12 @@ router.get('/myorders/:userId', async (req, res) => {
   }
 });
 
-// İade talebi oluştur/güncelle
-// PUT /api/orders/:id/request-return
 router.put('/:id/request-return', async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
 
     if (order) {
-      order.returnStatus = req.body.returnStatus || 'Beklemede'; // Varsayılan olarak Beklemede
+      order.returnStatus = req.body.returnStatus || 'Beklemede';
       order.returnReason = req.body.returnReason || '';
 
       const updatedOrder = await order.save();
