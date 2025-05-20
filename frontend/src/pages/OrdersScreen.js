@@ -118,9 +118,7 @@ const OrdersScreen = () => {
         </Typography>
       )}
 
-      {orders.length === 0 ? (
-        null
-      ) : (
+      {orders && Array.isArray(orders) && orders.length > 0 ? (
         <Grid container spacing={3}>
           {orders.map((order) => (
             <Grid item xs={12} key={order._id}>
@@ -210,6 +208,8 @@ const OrdersScreen = () => {
             </Grid>
           ))}
         </Grid>
+      ) : (
+        null
       )}
 
       <Dialog open={openReturnDialog} onClose={() => setOpenReturnDialog(false)}>
